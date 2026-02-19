@@ -16,7 +16,7 @@ PAYOFF: dict[tuple[int, int], tuple[int, int]] = {
     (0, 1): (0, 5),  # Agent cooperates, opponent defects
     (1, 0): (5, 0),  # Agent defects, opponent cooperates
     (1, 1): (1, 1),  # Both defect
-}
+} #TODO: make this configurable?
 
 
 class IPDEnv:
