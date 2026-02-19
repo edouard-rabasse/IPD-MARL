@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Hydra outputs (auto-generated working dirs)
+outputs/
+multirun/
+experiments/
+
+# pytest / ruff caches
+.pytest_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Machine-local activation scripts (contain hard-coded venv paths)
+activate_env.bat
+activate_env.ps1
+
+# Large model checkpoints (keep lightweight JSON, ignore .pt/.pth if >50 MB)
+# Uncomment below if models grow too large for Git:
+# *.pt
+# *.pth

@@ -1,0 +1,10 @@
+﻿defaults:
+  - agent: tabular_q
+  - env: ipd
+  - opponent: axelrod_titfortat
+  - train: default
+  - eval: default
+  - experiment: null
+  - _self_
+
+seed: 42
