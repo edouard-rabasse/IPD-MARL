@@ -38,3 +38,5 @@ activate_env.ps1
 # Uncomment below if models grow too large for Git:
 # *.pt
 # *.pth
+GEMINI.md
+test.py
