@@ -33,6 +33,8 @@ Thumbs.db
 # Machine-local activation scripts (contain hard-coded venv paths)
 activate_env.bat
 activate_env.ps1
+.zshrc
+activate_env.sh
 
 # Large model checkpoints (keep lightweight JSON, ignore .pt/.pth if >50 MB)
 # Uncomment below if models grow too large for Git:
