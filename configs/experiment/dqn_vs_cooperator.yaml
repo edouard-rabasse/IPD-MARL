@@ -1,0 +1,11 @@
+# @package _global_
+defaults:
+  - override /agent: dqn
+  - override /opponent: axelrod_cooperator
+  - override /train: default
+
+train:
+  episodes: 200
+  log_interval: 20
+
+seed: 42
