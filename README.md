@@ -17,6 +17,12 @@ Requires **Python ≥ 3.11** and [**uv**](https://docs.astral.sh/uv/).
 uv sync          # creates .venv/ and installs all runtime + dev dependencies
 ```
 
+To add packages, 
+```bash
+uv add <name of the package>     
+```
+
+
 ## Quick start
 
 ```bash
