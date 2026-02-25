@@ -7,7 +7,6 @@ from typing import Any
 
 import numpy as np
 
-
 # Standard Prisoner's Dilemma payoff matrix.
 # Keys: (agent_action, opponent_action) → (reward_agent, reward_opponent)
 # Actions: 0 = Cooperate, 1 = Defect

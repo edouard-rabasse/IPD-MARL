@@ -1,0 +1,57 @@
+# @package _global_
+defaults:
+  - override /agent: tabular_q
+  - override /opponent: null
+
+evolution:
+  generations: 20
+  match_steps: 7
+  mutation_noise: 0
+  survival_rate: 0.5
+  num_opponents: 5
+  population:
+    - name: tabular_q
+      count: 3
+      train: true
+      checkpoint: null
+      config:
+        lr: 0.1
+        gamma: 0.95
+        epsilon: 0.1
+        memory_length: 3
+    - name: dqn
+      count: 3
+      train: true
+      checkpoint: null
+      config:
+        lr: 0.001
+        gamma: 0.99
+        epsilon: 0.1
+        memory_length: 3
+        batch_size: 32
+        buffer_capacity: 10000
+        target_update_freq: 100
+    # - name: fixed_strategy
+    #   count: 3
+    #   train: false
+    #   checkpoint: null
+    #   config:
+    #     strategy_name: "Tit For Tat"
+    # - name: fixed_strategy
+    #   count: 3
+    #   train: false
+    #   checkpoint: null
+    #   config:
+    #     strategy_name: "Defector"
+    # - name: fixed_strategy
+    #   count: 3
+    #   train: false
+    #   checkpoint: null
+    #   config:
+    #     strategy_name: "Cooperator"
+
+env:
+  max_rounds: 7
+  noise: 0.0
+
+seed: 42

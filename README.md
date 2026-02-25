@@ -39,13 +39,16 @@ uv run python scripts/train.py opponent=self_play train.episodes=300
 # 4. Evaluate a past run
 uv run python scripts/evaluate.py +run_dir=experiments/2026-02-18/143022_tabular_q_vs_titfortat
 
-# 5. Run tests
+# 5. Run evolutionary tournament (mixed population)
+uv run python scripts/evolution.py experiment=evolution
+
+# 6. Run tests
 uv run pytest
 
-# 6. Lint
+# 7. Lint
 uv run ruff check src/ scripts/ tests/
 
-# 7. Compare runs
+# 8. Compare runs
 uv run python scripts/visualize.py \
     runs="experiments/run1,experiments/run2" output=comparison.png
 ```
@@ -74,12 +77,12 @@ Configs live in `configs/` and are composable:
 
 | Config group | Default         | Alternatives                             |
 |-------------|-----------------|------------------------------------------|
-| agent       | `tabular_q`     | `dqn`                                    |
+| agent       | `tabular_q`     | `dqn`, `fixed_strategy`                  |
 | env         | `ipd`           | —                                        |
 | opponent    | `axelrod_titfortat` | `axelrod_defector`, `self_play`       |
 | train       | `default`       | —                                        |
 | eval        | `default`       | —                                        |
-| experiment  | *(none)*        | `baseline_tabular_vs_tft`                |
+| experiment  | *(none)*        | `baseline_tabular_vs_tft`, `evolution`   |
 
 Override any value from the CLI:
 
@@ -100,18 +103,21 @@ Add new experiments by creating a YAML file in `configs/experiment/` — see
 │   ├── opponent/           # axelrod_titfortat.yaml, axelrod_defector.yaml, self_play.yaml
 │   ├── train/              # default.yaml
 │   ├── eval/               # default.yaml
-│   └── experiment/         # baseline_tabular_vs_tft.yaml
+│   └── experiment/         # baseline_tabular_vs_tft.yaml, evolution.yaml
 ├── src/ipd_marl/           # Python package (src layout)
-│   ├── agents/             # BaseAgent, TabularQAgent, DQNAgent
+│   ├── agents/             # BaseAgent, TabularQAgent, DQNAgent, FixedStrategyAgent
 │   ├── envs/               # IPDEnv, AxelrodOpponent
 │   ├── training/           # train loop, evaluation metrics, replay buffer
 │   └── utils/              # seed, git info, run artefact helpers
 ├── scripts/
 │   ├── train.py            # Hydra entry point for training
-│   └── evaluate.py         # Summarise a past run
+│   ├── evolution.py        # Evolutionary tournament with config-driven population
+│   ├── evaluate.py         # Summarise a past run
+│   └── visualize.py        # Compare runs
 ├── tests/
 │   ├── test_agent_interface.py
-│   └── test_smoke_train.py
+│   ├── test_smoke_train.py
+│   └── test_smoke_evolution.py
 ├── experiments/            # Timestamped run outputs (tracked in Git via .gitkeep)
 ├── pyproject.toml
 ├── ruff.toml

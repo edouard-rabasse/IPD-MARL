@@ -11,7 +11,6 @@ from omegaconf import OmegaConf
 from ipd_marl.agents.dqn import DQNAgent
 from ipd_marl.agents.tabular_q import TabularQAgent
 
-
 # ---------- helpers ----------
 
 
@@ -95,4 +94,44 @@ class TestDQNAgent:
             agent2 = DQNAgent(obs_dim=6, cfg=_make_dqn_cfg())
             agent2.load(path)
             action = agent2.act(obs)
+            assert action in (0, 1)
+
+
+# ---------- FixedStrategyAgent ----------
+
+
+def _make_fixed_cfg():
+    return OmegaConf.create({"strategy_name": "Tit For Tat"})
+
+
+class TestFixedStrategyAgent:
+    def test_act_returns_valid_action(self):
+        from ipd_marl.agents.fixed_strategy import FixedStrategyAgent
+
+        agent = FixedStrategyAgent(obs_dim=6, cfg=_make_fixed_cfg())
+        obs = np.array([-1, -1, -1, -1, -1, -1], dtype=np.int32)
+        action = agent.act(obs)
+        assert action in (0, 1)
+
+    def test_observe_no_crash(self):
+        from ipd_marl.agents.fixed_strategy import FixedStrategyAgent
+
+        agent = FixedStrategyAgent(obs_dim=6, cfg=_make_fixed_cfg())
+        obs = np.array([-1, -1, -1, -1, -1, -1], dtype=np.int32)
+        next_obs = np.array([0, 1, -1, -1, -1, -1], dtype=np.int32)
+        agent.observe(obs, 0, 3.0, next_obs, False)
+
+    def test_save_load_noop(self):
+        from ipd_marl.agents.fixed_strategy import FixedStrategyAgent
+
+        agent = FixedStrategyAgent(obs_dim=6, cfg=_make_fixed_cfg())
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "fixed_agent.json")
+            # save and load should not raise
+            agent.save(path)
+            agent.load(path)
+            # Agent should still work after no-op load
+            obs = np.array([-1, -1, -1, -1, -1, -1], dtype=np.int32)
+            action = agent.act(obs)
             assert action in (0, 1)

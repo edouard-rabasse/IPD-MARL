@@ -23,3 +23,6 @@ def set_style() -> None:
             "lines.linewidth": 2,
         }
     )
+
+    ## set colors palette to tab20
+    sns.set_palette("tab20")
