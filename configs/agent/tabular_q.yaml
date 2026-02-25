@@ -1,5 +1,5 @@
 name: tabular_q
 lr: 0.1
-gamma: 0.95
+gamma: 1
 epsilon: 0.1
 memory_length: 3
