@@ -62,7 +62,6 @@ def _build_evolution_cfg():
 class TestSmokeEvolution:
     def test_short_tournament_runs(self):
         """A 2-generation tournament with mixed agents should not crash."""
-        # Import here to avoid issues if evolution module has top-level side effects
         from ipd_marl.evolution import EvolutionaryTournament
 
         cfg = _build_evolution_cfg()
@@ -77,6 +76,70 @@ class TestSmokeEvolution:
             assert "max_fitness" in df.columns
             assert "mean_fitness_tabular_q" in df.columns
             assert "mean_fitness_tit_for_tat" in df.columns
+
+    def test_behavioral_metrics_in_csv(self):
+        """Evolution CSV must contain behavioral metric columns."""
+        from ipd_marl.evolution import EvolutionaryTournament
+
+        cfg = _build_evolution_cfg()
+        set_seed(cfg.seed)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tournament = EvolutionaryTournament(cfg, tmp)
+            df = tournament.run()
+
+            # Overall behavioral metrics
+            for col in [
+                "mean_coop_rate",
+                "mean_p_c_given_c",
+                "mean_p_c_given_d",
+                "mean_retaliation",
+                "mean_forgiveness",
+            ]:
+                assert col in df.columns, f"Missing column: {col}"
+
+            # Per-type behavioral metrics
+            for atype in ["tabular_q", "tit_for_tat"]:
+                for prefix in ["coop_rate_", "p_c_given_c_", "retaliation_", "forgiveness_"]:
+                    col = f"{prefix}{atype}"
+                    assert col in df.columns, f"Missing column: {col}"
+
+    def test_match_result_dataclass(self):
+        """play_match must return a MatchResult with action histories."""
+        from ipd_marl.agents import make_agent_from_slot
+        from ipd_marl.envs.ipd_env import IPDEnv
+        from ipd_marl.evolution.match import MatchResult, play_match
+
+        env = IPDEnv(memory_length=3, max_rounds=5)
+        slot_a = OmegaConf.create({
+            "name": "tabular_q",
+            "count": 1,
+            "train": True,
+            "checkpoint": None,
+            "config": {"lr": 0.1, "gamma": 0.95, "epsilon": 0.5, "memory_length": 3},
+        })
+        slot_b = OmegaConf.create({
+            "name": "fixed_strategy",
+            "count": 1,
+            "train": False,
+            "checkpoint": None,
+            "config": {"strategy_name": "Cooperator"},
+        })
+
+        agent_a = make_agent_from_slot(slot_a)
+        agent_b = make_agent_from_slot(slot_b)
+
+        result = play_match(agent_a, agent_b, env, steps=5)
+
+        assert isinstance(result, MatchResult)
+        assert len(result.actions_a) == 5
+        assert len(result.actions_b) == 5
+        assert len(result.rewards_a) == 5
+        assert len(result.rewards_b) == 5
+        assert all(a in (0, 1) for a in result.actions_a)
+        assert all(a in (0, 1) for a in result.actions_b)
+        assert result.total_reward_a == sum(result.rewards_a)
+        assert result.total_reward_b == sum(result.rewards_b)
 
     def test_population_sizes_match_config(self):
         """Population size should match sum of all slot counts."""

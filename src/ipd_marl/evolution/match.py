@@ -2,8 +2,32 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 from ipd_marl.agents.base import BaseAgent
 from ipd_marl.envs.ipd_env import IPDEnv
+
+
+@dataclass
+class MatchResult:
+    """Detailed result of a head-to-head match.
+
+    Attributes
+    ----------
+    total_reward_a, total_reward_b : float
+        Cumulative reward for each player.
+    actions_a, actions_b : list[int]
+        Per-round actions (0=C, 1=D) for each player.
+    rewards_a, rewards_b : list[float]
+        Per-round rewards for each player.
+    """
+
+    total_reward_a: float = 0.0
+    total_reward_b: float = 0.0
+    actions_a: list[int] = field(default_factory=list)
+    actions_b: list[int] = field(default_factory=list)
+    rewards_a: list[float] = field(default_factory=list)
+    rewards_b: list[float] = field(default_factory=list)
 
 
 def play_match(
@@ -13,7 +37,7 @@ def play_match(
     steps: int,
     train_a: bool = False,
     train_b: bool = False,
-) -> tuple[float, float]:
+) -> MatchResult:
     """Play a single match between two agents.
 
     Parameters
@@ -30,8 +54,8 @@ def play_match(
 
     Returns
     -------
-    tuple[float, float]
-        Total reward for agent_a and agent_b respectively.
+    MatchResult
+        Detailed match outcome including action histories and rewards.
     """
     obs_a = env.reset()
     obs_b = obs_a.copy()
@@ -39,8 +63,7 @@ def play_match(
     agent_a.reset()
     agent_b.reset()
 
-    total_reward_a = 0.0
-    total_reward_b = 0.0
+    result = MatchResult()
 
     for _ in range(steps):
         action_a = agent_a.act(obs_a)
@@ -56,19 +79,22 @@ def play_match(
 
         reward_b = info["reward_opponent"]
 
+        # Record action histories and per-round rewards
+        result.actions_a.append(int(action_a))
+        result.actions_b.append(int(action_b))
+        result.rewards_a.append(float(reward_a))
+        result.rewards_b.append(float(reward_b))
+
         # Optionally train each agent
         if train_a:
             agent_a.observe(obs_a, action_a, reward_a, next_obs_a, done)
         if train_b:
             agent_b.observe(obs_b, action_b, reward_b, next_obs_b, done)
 
-        total_reward_a += reward_a
-        total_reward_b += reward_b
+        result.total_reward_a += reward_a
+        result.total_reward_b += reward_b
 
         obs_a = next_obs_a
         obs_b = next_obs_b
 
-        if done:
-            break
-
-    return total_reward_a, total_reward_b
+    return result

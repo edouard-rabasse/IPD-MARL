@@ -40,12 +40,12 @@ def main(cfg: DictConfig) -> None:
     # Print summary
     pop_slots = cfg.evolution.population
     total_pop = sum(int(s.count) for s in pop_slots)
-    print(f"▶ Run directory: {run_dir}")
-    print(f"▶ Population: {total_pop} agents | Generations: {cfg.evolution.generations}")
+    print(f">> Run directory: {run_dir}")
+    print(f">> Population: {total_pop} agents | Generations: {cfg.evolution.generations}")
     for slot in pop_slots:
         ckpt = slot.get("checkpoint", None)
         ckpt_str = f" (checkpoint: {ckpt})" if ckpt else ""
-        print(f"  • {slot.count}x {slot.name} [train={slot.get('train', False)}]{ckpt_str}")
+        print(f"  - {slot.count}x {slot.name} [train={slot.get('train', False)}]{ckpt_str}")
     print()
 
     # Run tournament
@@ -55,14 +55,14 @@ def main(cfg: DictConfig) -> None:
     # Save metrics
     metrics_path = os.path.join(run_dir, "evolution_metrics.csv")
     metrics_df.to_csv(metrics_path, index=False)
-    print(f"▶ Metrics saved to {metrics_path}")
+    print(f">> Metrics saved to {metrics_path}")
 
     # Plotting
     try:
         plot_evolution_metrics(metrics_df, run_dir)
-        print(f"▶ Plot saved to {os.path.join(run_dir, 'fitness_plot.png')}")
+        print(f">> Plot saved to {os.path.join(run_dir, 'fitness_plot.png')}")
     except Exception as e:
-        print(f"⚠ Could not generate plot: {e}")
+        print(f"[WARN] Could not generate plot: {e}")
 
 
 if __name__ == "__main__":

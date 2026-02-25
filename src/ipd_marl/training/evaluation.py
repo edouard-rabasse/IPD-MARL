@@ -25,6 +25,118 @@ def compute_coop_rate(actions: Sequence[int]) -> float:
     return float(sum(1 for a in actions if a == 0) / len(actions))
 
 
+def compute_conditional_coop(
+    actions_self: Sequence[int],
+    actions_opp: Sequence[int],
+) -> tuple[float, float]:
+    """Conditional cooperation probabilities.
+
+    Parameters
+    ----------
+    actions_self : sequence of int
+        This player's actions per round (0=C, 1=D).
+    actions_opp : sequence of int
+        Opponent's actions per round (0=C, 1=D).
+
+    Returns
+    -------
+    tuple[float, float]
+        ``(p_c_given_opp_c, p_c_given_opp_d)`` — probability this player
+        cooperates given the opponent cooperated (or defected) on the
+        *previous* round.  Returns ``(0.0, 0.0)`` if fewer than 2 rounds.
+    """
+    if len(actions_self) < 2 or len(actions_opp) < 2:
+        return 0.0, 0.0
+
+    c_after_c = 0
+    total_after_c = 0
+    c_after_d = 0
+    total_after_d = 0
+
+    for t in range(1, len(actions_self)):
+        if actions_opp[t - 1] == 0:  # opponent cooperated
+            total_after_c += 1
+            if actions_self[t] == 0:
+                c_after_c += 1
+        else:  # opponent defected
+            total_after_d += 1
+            if actions_self[t] == 0:
+                c_after_d += 1
+
+    p_c_given_c = float(c_after_c / total_after_c) if total_after_c > 0 else 0.0
+    p_c_given_d = float(c_after_d / total_after_d) if total_after_d > 0 else 0.0
+    return p_c_given_c, p_c_given_d
+
+
+def compute_retaliation_rate(
+    actions_self: Sequence[int],
+    actions_opp: Sequence[int],
+) -> float:
+    """Retaliation rate: P(D_t | opp_D_{t-1}).
+
+    Parameters
+    ----------
+    actions_self : sequence of int
+        This player's actions (0=C, 1=D).
+    actions_opp : sequence of int
+        Opponent's actions (0=C, 1=D).
+
+    Returns
+    -------
+    float
+        Probability of defecting after the opponent defected.
+    """
+    if len(actions_self) < 2 or len(actions_opp) < 2:
+        return 0.0
+
+    d_after_opp_d = 0
+    total_after_opp_d = 0
+
+    for t in range(1, len(actions_self)):
+        if actions_opp[t - 1] == 1:
+            total_after_opp_d += 1
+            if actions_self[t] == 1:
+                d_after_opp_d += 1
+
+    return float(d_after_opp_d / total_after_opp_d) if total_after_opp_d > 0 else 0.0
+
+
+def compute_forgiveness_rate(
+    actions_self: Sequence[int],
+    actions_opp: Sequence[int],
+) -> float:
+    """Forgiveness rate: P(C_t | self_D_{t-1} & opp_D_{t-1}).
+
+    Measures the probability of returning to cooperation after a round of
+    mutual defection.
+
+    Parameters
+    ----------
+    actions_self : sequence of int
+        This player's actions (0=C, 1=D).
+    actions_opp : sequence of int
+        Opponent's actions (0=C, 1=D).
+
+    Returns
+    -------
+    float
+        Probability of cooperating after mutual defection.
+    """
+    if len(actions_self) < 2 or len(actions_opp) < 2:
+        return 0.0
+
+    c_after_dd = 0
+    total_dd = 0
+
+    for t in range(1, len(actions_self)):
+        if actions_self[t - 1] == 1 and actions_opp[t - 1] == 1:
+            total_dd += 1
+            if actions_self[t] == 0:
+                c_after_dd += 1
+
+    return float(c_after_dd / total_dd) if total_dd > 0 else 0.0
+
+
 def compute_trust_margin(
     agent_rewards: Sequence[float], opponent_rewards: Sequence[float]
 ) -> float:

@@ -44,7 +44,7 @@ def plot_comparison(run_dirs: list[str], output_file: str) -> None:
         try:
             dfs.append(load_run_metrics(d))
         except FileNotFoundError as e:
-            print(f"⚠ Skipping {d}: {e}", file=sys.stderr)
+            print(f"[WARN] Skipping {d}: {e}", file=sys.stderr)
 
     if not dfs:
         print("No valid runs to plot.", file=sys.stderr)

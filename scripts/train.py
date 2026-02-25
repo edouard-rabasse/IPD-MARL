@@ -48,9 +48,9 @@ def main(cfg: DictConfig) -> None:
     )
     save_run_artifacts(run_dir, cfg, overrides, cfg.seed)
 
-    print(f"▶ Run directory: {run_dir}")
-    print(f"▶ Agent: {cfg.agent.name}  |  Opponent: {cfg.opponent.type}")
-    print(f"▶ Episodes: {cfg.train.episodes}  |  Rounds/ep: {cfg.env.max_rounds}")
+    print(f">> Run directory: {run_dir}")
+    print(f">> Agent: {cfg.agent.name}  |  Opponent: {cfg.opponent.type}")
+    print(f">> Episodes: {cfg.train.episodes}  |  Rounds/ep: {cfg.env.max_rounds}")
     print()
 
     # Train
@@ -66,20 +66,20 @@ def main(cfg: DictConfig) -> None:
     print(f"  Mean reward    : {summary['mean_reward']:.2f}")
     print(f"  Mean coop rate : {summary['mean_coop_rate']:.2f}")
     print(f"  Mean opp coop  : {summary['mean_opp_coop_rate']:.2f}")
-    print(f"  Mean ΔR        : {summary['mean_trust_margin']:.2f}")
+    print(f"  Mean dR        : {summary['mean_trust_margin']:.2f}")
     print("=" * 60)
 
     # Plotting
     try:
         from ipd_marl.utils.plotting import plot_run_metrics
 
-        print("▶ Generating plots...")
+        print(">> Generating plots...")
         plot_run_metrics(metrics_df, os.path.join(run_dir, "plots"))
         print(f"  Plots saved to : {os.path.join(run_dir, 'plots')}")
     except ImportError as e:
-        print(f"⚠ Could not generate plots: {e}")
+        print(f"[WARN] Could not generate plots: {e}")
     except Exception as e:
-        print(f"⚠ Error generating plots: {e}")
+        print(f"[WARN] Error generating plots: {e}")
 
 
 if __name__ == "__main__":

@@ -11,6 +11,12 @@ import pandas as pd
 from omegaconf import DictConfig
 
 from ipd_marl.envs.ipd_env import IPDEnv
+from ipd_marl.training.evaluation import (
+    compute_conditional_coop,
+    compute_coop_rate,
+    compute_forgiveness_rate,
+    compute_retaliation_rate,
+)
 
 from .agent_entry import AgentEntry
 from .match import play_match
@@ -70,6 +76,13 @@ class EvolutionaryTournament:
         for gen in range(1, self.generations + 1):
             fitness_scores = np.zeros(self.pop_size)
 
+            # Per-agent behavioral accumulators
+            agent_coop_rates: list[list[float]] = [[] for _ in range(self.pop_size)]
+            agent_p_c_given_c: list[list[float]] = [[] for _ in range(self.pop_size)]
+            agent_p_c_given_d: list[list[float]] = [[] for _ in range(self.pop_size)]
+            agent_retaliation: list[list[float]] = [[] for _ in range(self.pop_size)]
+            agent_forgiveness: list[list[float]] = [[] for _ in range(self.pop_size)]
+
             # 1. Fitness evaluation — each agent plays against random opponents
             n_opp = min(self.num_opponents, self.pop_size - 1)
 
@@ -83,7 +96,7 @@ class EvolutionaryTournament:
                 total_score = 0.0
                 for opp_idx in opp_indices:
                     entry_j = self.population[opp_idx]
-                    score_a, _ = play_match(
+                    result = play_match(
                         entry_i.agent,
                         entry_j.agent,
                         self.env,
@@ -91,7 +104,21 @@ class EvolutionaryTournament:
                         train_a=entry_i.train,
                         train_b=entry_j.train,
                     )
-                    total_score += score_a
+                    total_score += result.total_reward_a
+
+                    # Behavioral metrics for agent i in this match
+                    agent_coop_rates[i].append(compute_coop_rate(result.actions_a))
+                    pc_c, pc_d = compute_conditional_coop(
+                        result.actions_a, result.actions_b
+                    )
+                    agent_p_c_given_c[i].append(pc_c)
+                    agent_p_c_given_d[i].append(pc_d)
+                    agent_retaliation[i].append(
+                        compute_retaliation_rate(result.actions_a, result.actions_b)
+                    )
+                    agent_forgiveness[i].append(
+                        compute_forgiveness_rate(result.actions_a, result.actions_b)
+                    )
 
                 fitness_scores[i] = total_score / n_opp
 
@@ -101,12 +128,22 @@ class EvolutionaryTournament:
             min_fitness = float(np.min(fitness_scores))
             std_fitness = float(np.std(fitness_scores))
 
+            # Aggregate behavioral metrics across all agents
+            def _safe_mean(lst: list[list[float]]) -> float:
+                flat = [v for sub in lst for v in sub]
+                return float(np.mean(flat)) if flat else 0.0
+
             gen_metrics: dict = {
                 "generation": gen,
                 "mean_fitness": mean_fitness,
                 "max_fitness": max_fitness,
                 "min_fitness": min_fitness,
                 "std_fitness": std_fitness,
+                "mean_coop_rate": _safe_mean(agent_coop_rates),
+                "mean_p_c_given_c": _safe_mean(agent_p_c_given_c),
+                "mean_p_c_given_d": _safe_mean(agent_p_c_given_d),
+                "mean_retaliation": _safe_mean(agent_retaliation),
+                "mean_forgiveness": _safe_mean(agent_forgiveness),
             }
 
             # Per-type metrics
@@ -115,6 +152,22 @@ class EvolutionaryTournament:
                 type_indices = [i for i, e in enumerate(self.population) if e.name == atype]
                 type_scores = fitness_scores[type_indices]
                 gen_metrics[f"mean_fitness_{atype}"] = float(np.mean(type_scores))
+                # Per-type behavioral metrics
+                gen_metrics[f"coop_rate_{atype}"] = _safe_mean(
+                    [agent_coop_rates[i] for i in type_indices]
+                )
+                gen_metrics[f"p_c_given_c_{atype}"] = _safe_mean(
+                    [agent_p_c_given_c[i] for i in type_indices]
+                )
+                gen_metrics[f"p_c_given_d_{atype}"] = _safe_mean(
+                    [agent_p_c_given_d[i] for i in type_indices]
+                )
+                gen_metrics[f"retaliation_{atype}"] = _safe_mean(
+                    [agent_retaliation[i] for i in type_indices]
+                )
+                gen_metrics[f"forgiveness_{atype}"] = _safe_mean(
+                    [agent_forgiveness[i] for i in type_indices]
+                )
 
             metrics.append(gen_metrics)
 
