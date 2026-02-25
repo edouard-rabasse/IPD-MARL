@@ -111,20 +111,24 @@ class TestSmokeEvolution:
         from ipd_marl.evolution.match import MatchResult, play_match
 
         env = IPDEnv(memory_length=3, max_rounds=5)
-        slot_a = OmegaConf.create({
-            "name": "tabular_q",
-            "count": 1,
-            "train": True,
-            "checkpoint": None,
-            "config": {"lr": 0.1, "gamma": 0.95, "epsilon": 0.5, "memory_length": 3},
-        })
-        slot_b = OmegaConf.create({
-            "name": "fixed_strategy",
-            "count": 1,
-            "train": False,
-            "checkpoint": None,
-            "config": {"strategy_name": "Cooperator"},
-        })
+        slot_a = OmegaConf.create(
+            {
+                "name": "tabular_q",
+                "count": 1,
+                "train": True,
+                "checkpoint": None,
+                "config": {"lr": 0.1, "gamma": 0.95, "epsilon": 0.5, "memory_length": 3},
+            }
+        )
+        slot_b = OmegaConf.create(
+            {
+                "name": "fixed_strategy",
+                "count": 1,
+                "train": False,
+                "checkpoint": None,
+                "config": {"strategy_name": "Cooperator"},
+            }
+        )
 
         agent_a = make_agent_from_slot(slot_a)
         agent_b = make_agent_from_slot(slot_b)

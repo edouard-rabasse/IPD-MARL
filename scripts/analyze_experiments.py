@@ -314,10 +314,14 @@ def plot_conditional_coop_heatmap(per_type_df: pd.DataFrame) -> str:
 
     set_style()
 
-    agg = per_type_df.groupby(["condition", "agent_type"]).agg(
-        p_c_given_c=("p_c_given_c", "mean"),
-        p_c_given_d=("p_c_given_d", "mean"),
-    ).reset_index()
+    agg = (
+        per_type_df.groupby(["condition", "agent_type"])
+        .agg(
+            p_c_given_c=("p_c_given_c", "mean"),
+            p_c_given_d=("p_c_given_d", "mean"),
+        )
+        .reset_index()
+    )
 
     agg["label"] = agg["condition"] + "\n" + agg["agent_type"]
 
@@ -372,10 +376,14 @@ def plot_retaliation_forgiveness(per_type_df: pd.DataFrame) -> str:
 
     set_style()
 
-    agg = per_type_df.groupby(["condition", "agent_type"]).agg(
-        retaliation=("retaliation", "mean"),
-        forgiveness=("forgiveness", "mean"),
-    ).reset_index()
+    agg = (
+        per_type_df.groupby(["condition", "agent_type"])
+        .agg(
+            retaliation=("retaliation", "mean"),
+            forgiveness=("forgiveness", "mean"),
+        )
+        .reset_index()
+    )
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -404,6 +412,7 @@ def plot_retaliation_forgiveness(per_type_df: pd.DataFrame) -> str:
 
     # Legend
     from matplotlib.patches import Patch
+
     handles = [Patch(color=type_color[t], label=t) for t in types]
     ax.legend(handles=handles, fontsize=8)
 
@@ -456,12 +465,10 @@ def plot_axelrod_effect(summary: pd.DataFrame) -> str:
             base_lbl = CONDITION_LABELS.get(base, base)
             axlr_lbl = CONDITION_LABELS.get(axlr, axlr)
             v_no = (
-                cond_map.get(base_lbl, {}).get(metric, np.nan)
-                if base_lbl in cond_map else np.nan
+                cond_map.get(base_lbl, {}).get(metric, np.nan) if base_lbl in cond_map else np.nan
             )
             v_ax = (
-                cond_map.get(axlr_lbl, {}).get(metric, np.nan)
-                if axlr_lbl in cond_map else np.nan
+                cond_map.get(axlr_lbl, {}).get(metric, np.nan) if axlr_lbl in cond_map else np.nan
             )
             vals_no.append(v_no if not isinstance(v_no, dict) else np.nan)
             vals_ax.append(v_ax if not isinstance(v_ax, dict) else np.nan)
@@ -493,8 +500,7 @@ def plot_dqn_vs_tabular(
     set_style()
 
     mixed_conds = [
-        c for c in CONDITION_ORDER
-        if "0t_6d" not in c and "6t_0d" not in c and c in data
+        c for c in CONDITION_ORDER if "0t_6d" not in c and "6t_0d" not in c and c in data
     ]
     if not mixed_conds:
         return ""
@@ -545,10 +551,12 @@ def plot_variance_across_seeds(
             continue
         for seed, df, _ in data[cond]:
             last = df.iloc[-1]
-            records.append({
-                "condition": CONDITION_LABELS.get(cond, cond),
-                "fitness": last.get("mean_fitness", np.nan),
-            })
+            records.append(
+                {
+                    "condition": CONDITION_LABELS.get(cond, cond),
+                    "fitness": last.get("mean_fitness", np.nan),
+                }
+            )
 
     if not records:
         return ""
@@ -559,9 +567,7 @@ def plot_variance_across_seeds(
     box_data = [rdf[rdf["condition"] == lb]["fitness"].values for lb in labels]
 
     bp = ax.boxplot(box_data, tick_labels=labels, patch_artist=True)
-    colors_list = [
-        "#4C72B0" if "Axelrod" not in lb else "#DD8452" for lb in labels
-    ]
+    colors_list = ["#4C72B0" if "Axelrod" not in lb else "#DD8452" for lb in labels]
     for patch, color in zip(bp["boxes"], colors_list):
         patch.set_facecolor(color)
         patch.set_alpha(0.7)
@@ -696,7 +702,11 @@ def analyze_tabular_qtable(run_dir: str) -> tuple[str, str, str]:
 
     # Strategy classification
     classification = _classify_strategy(
-        coop_fraction, p_c_after_opp_c, p_c_after_opp_d, p_c_after_cc, p_c_after_dd,
+        coop_fraction,
+        p_c_after_opp_c,
+        p_c_after_opp_d,
+        p_c_after_cc,
+        p_c_after_dd,
     )
 
     analysis_text = textwrap.dedent(f"""\
@@ -734,8 +744,15 @@ def analyze_tabular_qtable(run_dir: str) -> tuple[str, str, str]:
         # Annotate cells with Q-values
         for i in range(q_matrix.shape[0]):
             for j in range(q_matrix.shape[1]):
-                ax.text(j, i, f"{q_matrix[i, j]:.2f}", ha="center", va="center",
-                        fontsize=6, color="black")
+                ax.text(
+                    j,
+                    i,
+                    f"{q_matrix[i, j]:.2f}",
+                    ha="center",
+                    va="center",
+                    fontsize=6,
+                    color="black",
+                )
 
         fig.colorbar(im, ax=ax, label="Q-value")
 
@@ -748,8 +765,12 @@ def analyze_tabular_qtable(run_dir: str) -> tuple[str, str, str]:
     fig2, ax2 = plt.subplots(figsize=(6, max(3, total_states * 0.25)))
     policy_matrix = np.array([policy[s] for s in sorted_states]).reshape(-1, 1)
     ax2.imshow(
-        policy_matrix, aspect="auto", cmap="RdYlGn_r",
-        interpolation="nearest", vmin=0, vmax=1,
+        policy_matrix,
+        aspect="auto",
+        cmap="RdYlGn_r",
+        interpolation="nearest",
+        vmin=0,
+        vmax=1,
     )
     ax2.set_yticks(range(len(state_labels)))
     ax2.set_yticklabels(state_labels, fontsize=6)
@@ -759,8 +780,16 @@ def analyze_tabular_qtable(run_dir: str) -> tuple[str, str, str]:
 
     for i in range(len(sorted_states)):
         action_label = "C" if policy_matrix[i, 0] == 0 else "D"
-        ax2.text(0, i, action_label, ha="center", va="center", fontsize=8,
-                 fontweight="bold", color="black")
+        ax2.text(
+            0,
+            i,
+            action_label,
+            ha="center",
+            va="center",
+            fontsize=8,
+            fontweight="bold",
+            color="black",
+        )
 
     fig2.tight_layout()
     policy_path = os.path.join(_ensure_figures_dir(), "best_tabular_policy.png")
@@ -863,8 +892,7 @@ def generate_report(
             if std_col in summary_display.columns:
                 summary_display[col] = summary_display.apply(
                     lambda r, c=col, s=std_col: (
-                        f"{r[c]:.3f} ± {r[s]:.3f}"
-                        if pd.notna(r[c]) else "—"
+                        f"{r[c]:.3f} ± {r[s]:.3f}" if pd.notna(r[c]) else "—"
                     ),
                     axis=1,
                 )
@@ -879,12 +907,12 @@ def generate_report(
     # Rename columns to clean labels
     summary_display.columns = [
         c.replace("mean_fitness_mean", "Fitness")
-         .replace("max_fitness_mean", "Max Fitness")
-         .replace("mean_coop_rate_mean", "Coop Rate")
-         .replace("mean_p_c_given_c_mean", "P(C|C)")
-         .replace("mean_p_c_given_d_mean", "P(C|D)")
-         .replace("mean_retaliation_mean", "Retaliation")
-         .replace("mean_forgiveness_mean", "Forgiveness")
+        .replace("max_fitness_mean", "Max Fitness")
+        .replace("mean_coop_rate_mean", "Coop Rate")
+        .replace("mean_p_c_given_c_mean", "P(C|C)")
+        .replace("mean_p_c_given_d_mean", "P(C|D)")
+        .replace("mean_retaliation_mean", "Retaliation")
+        .replace("mean_forgiveness_mean", "Forgiveness")
         for c in summary_display.columns
     ]
 
@@ -895,14 +923,18 @@ def generate_report(
         return os.path.relpath(path, os.path.dirname(ANALYSIS_PATH)).replace("\\", "/")
 
     # Build per-type summary
-    per_type_agg = per_type_df.groupby(["condition", "agent_type"]).agg(
-        fitness=("fitness", "mean"),
-        coop_rate=("coop_rate", "mean"),
-        p_c_given_c=("p_c_given_c", "mean"),
-        p_c_given_d=("p_c_given_d", "mean"),
-        retaliation=("retaliation", "mean"),
-        forgiveness=("forgiveness", "mean"),
-    ).reset_index()
+    per_type_agg = (
+        per_type_df.groupby(["condition", "agent_type"])
+        .agg(
+            fitness=("fitness", "mean"),
+            coop_rate=("coop_rate", "mean"),
+            p_c_given_c=("p_c_given_c", "mean"),
+            p_c_given_d=("p_c_given_d", "mean"),
+            retaliation=("retaliation", "mean"),
+            forgiveness=("forgiveness", "mean"),
+        )
+        .reset_index()
+    )
 
     # Run directory listing
     run_listing_lines = []
@@ -916,13 +948,9 @@ def generate_report(
 
     # Pre-compute long expressions for the template
     _best_tab_rel = (
-        os.path.relpath(best_tabular_dir, ROOT).replace("\\", "/")
-        if best_tabular_dir else "N/A"
+        os.path.relpath(best_tabular_dir, ROOT).replace("\\", "/") if best_tabular_dir else "N/A"
     )
-    _best_tab_cond = (
-        CONDITION_LABELS.get(best_tabular_cond, "N/A")
-        if best_tabular_cond else "N/A"
-    )
+    _best_tab_cond = CONDITION_LABELS.get(best_tabular_cond, "N/A") if best_tabular_cond else "N/A"
 
     report = textwrap.dedent(f"""\
     # Evolution Experiment Analysis
@@ -978,19 +1006,19 @@ def generate_report(
 
     ### Fitness by Condition
 
-    ![Fitness by Condition]({_rel(plot_paths.get('fitness_by_condition', ''))})
+    ![Fitness by Condition]({_rel(plot_paths.get("fitness_by_condition", ""))})
 
     ### Fitness Curves — Without Axelrod
 
-    ![Fitness Curves (No Axelrod)]({_rel(plot_paths.get('fitness_no_axelrod', ''))})
+    ![Fitness Curves (No Axelrod)]({_rel(plot_paths.get("fitness_no_axelrod", ""))})
 
     ### Fitness Curves — With Axelrod
 
-    ![Fitness Curves (With Axelrod)]({_rel(plot_paths.get('fitness_with_axelrod', ''))})
+    ![Fitness Curves (With Axelrod)]({_rel(plot_paths.get("fitness_with_axelrod", ""))})
 
     ### Variance Across Seeds
 
-    ![Variance Across Seeds]({_rel(plot_paths.get('variance', ''))})
+    ![Variance Across Seeds]({_rel(plot_paths.get("variance", ""))})
 
     ---
 
@@ -998,11 +1026,11 @@ def generate_report(
 
     ### Cooperation Rate Evolution
 
-    ![Cooperation Rate Evolution]({_rel(plot_paths.get('coop_rate', ''))})
+    ![Cooperation Rate Evolution]({_rel(plot_paths.get("coop_rate", ""))})
 
     ### Conditional Cooperation
 
-    ![Conditional Cooperation]({_rel(plot_paths.get('conditional_coop', ''))})
+    ![Conditional Cooperation]({_rel(plot_paths.get("conditional_coop", ""))})
 
     **Interpretation**: Points in the upper-left quadrant (high P(C|C), low P(C|D))
     indicate TFT-like reciprocal strategies. Points near (0, 0) are unconditional
@@ -1014,7 +1042,7 @@ def generate_report(
 
     ### Retaliation vs Forgiveness
 
-    ![Retaliation vs Forgiveness]({_rel(plot_paths.get('retaliation_forgiveness', ''))})
+    ![Retaliation vs Forgiveness]({_rel(plot_paths.get("retaliation_forgiveness", ""))})
 
     **Interpretation**: High retaliation + low forgiveness → Grim-like.
     High retaliation + high forgiveness → TFT-like (punishes but returns to C).
@@ -1024,7 +1052,7 @@ def generate_report(
 
     ## 5. DQN vs Tabular Q-Learning
 
-    ![DQN vs Tabular Fitness]({_rel(plot_paths.get('dqn_vs_tabular', ''))})
+    ![DQN vs Tabular Fitness]({_rel(plot_paths.get("dqn_vs_tabular", ""))})
 
     ### Per-Type Performance (Final Generation, Mean Across Seeds)
 
@@ -1034,7 +1062,7 @@ def generate_report(
 
     ## 6. Effect of Adding Axelrod Agents
 
-    ![Axelrod Effect]({_rel(plot_paths.get('axelrod_effect', ''))})
+    ![Axelrod Effect]({_rel(plot_paths.get("axelrod_effect", ""))})
 
     ---
 
@@ -1048,11 +1076,11 @@ def generate_report(
 
     ### Q-Table Heatmap
 
-    ![Q-Table Heatmap]({_rel(plot_paths.get('qtable', ''))})
+    ![Q-Table Heatmap]({_rel(plot_paths.get("qtable", ""))})
 
     ### Greedy Policy
 
-    ![Policy Grid]({_rel(plot_paths.get('policy', ''))})
+    ![Policy Grid]({_rel(plot_paths.get("policy", ""))})
 
     ---
 
@@ -1102,6 +1130,7 @@ def generate_report(
 def main() -> None:
     """Run the full analysis pipeline."""
     import matplotlib
+
     matplotlib.use("Agg")  # non-interactive backend
 
     print("=== Loading experiment data ===")

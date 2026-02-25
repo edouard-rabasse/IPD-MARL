@@ -127,11 +127,13 @@ def _plot_behavioral_metrics(metrics_df: pd.DataFrame, run_dir: str) -> None:
         pc_c = f"p_c_given_c_{atype}"
         pc_d = f"p_c_given_d_{atype}"
         if pc_c in metrics_df.columns:
-            ax.plot(gen, metrics_df[pc_c], color=colors[idx], linestyle="-",
-                    label=f"{atype} P(C|C)")
+            ax.plot(
+                gen, metrics_df[pc_c], color=colors[idx], linestyle="-", label=f"{atype} P(C|C)"
+            )
         if pc_d in metrics_df.columns:
-            ax.plot(gen, metrics_df[pc_d], color=colors[idx], linestyle="--",
-                    label=f"{atype} P(C|D)")
+            ax.plot(
+                gen, metrics_df[pc_d], color=colors[idx], linestyle="--", label=f"{atype} P(C|D)"
+            )
     ax.set_xlabel("Generation")
     ax.set_ylabel("Probability")
     ax.set_title("Conditional Cooperation")
@@ -145,11 +147,21 @@ def _plot_behavioral_metrics(metrics_df: pd.DataFrame, run_dir: str) -> None:
         ret_col = f"retaliation_{atype}"
         forg_col = f"forgiveness_{atype}"
         if ret_col in metrics_df.columns:
-            ax.plot(gen, metrics_df[ret_col], color=colors[idx], linestyle="-",
-                    label=f"{atype} Retaliation")
+            ax.plot(
+                gen,
+                metrics_df[ret_col],
+                color=colors[idx],
+                linestyle="-",
+                label=f"{atype} Retaliation",
+            )
         if forg_col in metrics_df.columns:
-            ax.plot(gen, metrics_df[forg_col], color=colors[idx], linestyle=":",
-                    label=f"{atype} Forgiveness")
+            ax.plot(
+                gen,
+                metrics_df[forg_col],
+                color=colors[idx],
+                linestyle=":",
+                label=f"{atype} Forgiveness",
+            )
     ax.set_xlabel("Generation")
     ax.set_ylabel("Rate")
     ax.set_title("Retaliation & Forgiveness")

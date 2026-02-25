@@ -108,9 +108,7 @@ class EvolutionaryTournament:
 
                     # Behavioral metrics for agent i in this match
                     agent_coop_rates[i].append(compute_coop_rate(result.actions_a))
-                    pc_c, pc_d = compute_conditional_coop(
-                        result.actions_a, result.actions_b
-                    )
+                    pc_c, pc_d = compute_conditional_coop(result.actions_a, result.actions_b)
                     agent_p_c_given_c[i].append(pc_c)
                     agent_p_c_given_d[i].append(pc_d)
                     agent_retaliation[i].append(
