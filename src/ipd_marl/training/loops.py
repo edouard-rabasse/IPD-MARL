@@ -158,13 +158,15 @@ def train(cfg, run_dir: str) -> pd.DataFrame:
         row["episode"] = ep
         records.append(row)
 
+        agent.update_epsilon(float(getattr(cfg.agent, "epsilon_decay", 1.0)))
+
         if ep % log_interval == 0 or ep == episodes:
             print(
                 f"[Episode {ep:>5}/{episodes}]  "
                 f"reward={row['episode_reward']:.1f}  "
                 f"coop={row['coop_rate']:.2f}  "
                 f"opp_coop={row['opp_coop_rate']:.2f}  "
-                f"ΔR={row['trust_margin']:.2f}"
+                f"dR={row['trust_margin']:.2f}"
             )
 
     # Persist metrics

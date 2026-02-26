@@ -29,8 +29,9 @@ class TabularQAgent(BaseAgent):
         self.lr: float = float(cfg.lr)
         self.gamma: float = float(cfg.gamma)
         self.epsilon: float = float(cfg.epsilon)
+        # Optimistic initialisation: start at max payoff (5.0) to drive exploration
         self.q_table: dict[tuple, np.ndarray] = defaultdict(
-            lambda: np.zeros(self.n_actions, dtype=np.float64)
+            lambda: np.full(self.n_actions, 5.0, dtype=np.float64)
         )
 
     # ---- helpers ----
@@ -43,7 +44,19 @@ class TabularQAgent(BaseAgent):
         if np.random.random() < self.epsilon:
             return int(np.random.randint(self.n_actions))
         q_values = self.q_table[self._key(obs)]
-        return int(np.argmax(q_values))
+        max_q = np.max(q_values)
+        ties = np.where(q_values == max_q)[0]
+        return int(np.random.choice(ties))
+
+    def update_epsilon(self, factor: float) -> None:
+        """Decay exploration rate multiplicatively.
+
+        Parameters
+        ----------
+        factor : float
+            Multiplicative factor applied to ``epsilon`` (e.g. 0.995).
+        """
+        self.epsilon = max(0.0, self.epsilon * factor)
 
     def observe(
         self,
@@ -70,7 +83,7 @@ class TabularQAgent(BaseAgent):
         """Load Q-table from a JSON file written by :meth:`save`."""
         with open(path, encoding="utf-8") as fh:
             raw = json.load(fh)
-        self.q_table = defaultdict(lambda: np.zeros(self.n_actions, dtype=np.float64))
+        self.q_table = defaultdict(lambda: np.full(self.n_actions, 5.0, dtype=np.float64))
         for k_str, v in raw.items():
             # Key was str(tuple) → eval is safe because we wrote it ourselves
             key = tuple(json.loads(k_str.replace("(", "[").replace(")", "]")))

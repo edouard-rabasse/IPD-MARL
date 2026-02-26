@@ -2,4 +2,5 @@ name: tabular_q
 lr: 0.1
 gamma: 1
 epsilon: 0.1
+epsilon_decay: 1.0  # multiplicative factor per episode; 1.0 = no decay
 memory_length: 3

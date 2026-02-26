@@ -40,4 +40,6 @@ activate_env.sh
 # *.pt
 # *.pth
 GEMINI.md
+CLAUDE.md
+
 test.py
