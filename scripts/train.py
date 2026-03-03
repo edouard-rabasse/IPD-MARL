@@ -66,7 +66,7 @@ def main(cfg: DictConfig) -> None:
     print(f"  Mean reward    : {summary['mean_reward']:.2f}")
     print(f"  Mean coop rate : {summary['mean_coop_rate']:.2f}")
     print(f"  Mean opp coop  : {summary['mean_opp_coop_rate']:.2f}")
-    print(f"  Mean dR        : {summary['mean_trust_margin']:.2f}")
+    print(f"  Mean ΔR        : {summary['mean_reward_difference']:.2f}")
     print("=" * 60)
 
     # Plotting

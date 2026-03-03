@@ -29,7 +29,7 @@ class BaseAgent(ABC):
     def end_episode(self) -> None:
         """Called at the end of every episode (no-op by default)."""
 
-    def update_epsilon(self, factor: float) -> None:
+    def update_epsilon(self) -> None:
         """Decay exploration rate (no-op by default for non-RL agents)."""
 
     # ------ core RL interface (abstract) ------

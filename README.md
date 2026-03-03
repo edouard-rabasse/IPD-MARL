@@ -72,7 +72,7 @@ experiments/
     └── 143022_tabular_q_vs_titfortat/
         ├── resolved_config.yaml   # full Hydra config (all defaults merged)
         ├── metadata.json          # timestamp, git hash, seed, package versions
-        ├── metrics.csv            # per-episode: reward, coop_rate, opp_coop_rate, trust_margin
+        ├── metrics.csv            # per-episode: reward, coop_rate, opp_coop_rate, reward_difference
         └── agent_model.json       # agent checkpoint (.json for tabular, .pt for DQN)
 ```
 
@@ -163,7 +163,7 @@ Add new experiments by creating a YAML file in `configs/experiment/` — see
 | `episode_reward` | Sum of agent payoffs over one episode |
 | `coop_rate` | Fraction of agent's effective actions = Cooperate |
 | `opp_coop_rate` | Fraction of opponent's effective actions = Cooperate |
-| `trust_margin` (dR) | `mean(agent_reward) - mean(opponent_reward)` |
+| `reward_difference` (dR) | `mean(agent_reward) - mean(opponent_reward)` |
 | `p_c_given_c` | P(Cooperate \| opponent cooperated last round) |
 | `p_c_given_d` | P(Cooperate \| opponent defected last round) |
 | `retaliation` | P(Defect \| opponent defected last round) |

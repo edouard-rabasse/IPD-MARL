@@ -2,7 +2,7 @@ name: dqn
 lr: 0.001
 gamma: 1
 epsilon: 0.1
-memory_length: 3
+memory_length: 6
 batch_size: 32
 buffer_capacity: 10000
 target_update_freq: 14

@@ -68,21 +68,21 @@ def plot_run_metrics(metrics_df: pd.DataFrame, output_dir: str) -> None:
     plt.savefig(os.path.join(output_dir, "cooperation_rates.png"))
     plt.close()
 
-    # 3. Trust Margin/Performance Gap
-    if "trust_margin" in metrics_df.columns:
+    # 3. Reward difference / performance gap (ΔR)
+    if "reward_difference" in metrics_df.columns:
         plt.figure()
         window = max(1, len(metrics_df) // 10)
         sns.lineplot(
             x=metrics_df.index,
-            y=metrics_df["trust_margin"].rolling(window=window, min_periods=1).mean(),
-            label="Trust Margin (Agent - Opponent)",
+            y=metrics_df["reward_difference"].rolling(window=window, min_periods=1).mean(),
+            label="Reward Difference (Agent - Opponent)",
             color="purple",
         )
         plt.axhline(0, color="gray", linestyle="--", alpha=0.5)
-        plt.title("Trust Margin (ΔR)")
+        plt.title("Reward Difference (ΔR)")
         plt.xlabel("Episode")
         plt.ylabel("Reward Difference")
         plt.legend()
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, "trust_margin.png"))
+        plt.savefig(os.path.join(output_dir, "reward_difference.png"))
         plt.close()

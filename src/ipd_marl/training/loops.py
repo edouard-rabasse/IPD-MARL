@@ -9,7 +9,7 @@ import pandas as pd
 from ipd_marl.agents import make_agent
 from ipd_marl.envs.axelrod_opponent import AxelrodOpponent
 from ipd_marl.envs.ipd_env import IPDEnv
-from ipd_marl.training.evaluation import compute_coop_rate, compute_trust_margin
+from ipd_marl.training.evaluation import compute_coop_rate, compute_reward_difference
 
 
 def _run_episode_vs_opponent(
@@ -57,7 +57,7 @@ def _run_episode_vs_opponent(
         "episode_reward": sum(agent_rewards),
         "coop_rate": compute_coop_rate(agent_actions),
         "opp_coop_rate": compute_coop_rate(opp_actions),
-        "trust_margin": compute_trust_margin(agent_rewards, opp_rewards),
+        "reward_difference": compute_reward_difference(agent_rewards, opp_rewards),
     }
 
 
@@ -111,7 +111,7 @@ def _run_episode_self_play(
         "episode_reward": sum(a1_rewards),
         "coop_rate": compute_coop_rate(a1_actions),
         "opp_coop_rate": compute_coop_rate(a2_actions),
-        "trust_margin": compute_trust_margin(a1_rewards, a2_rewards),
+        "reward_difference": compute_reward_difference(a1_rewards, a2_rewards),
     }
 
 
@@ -152,13 +152,14 @@ def train(cfg, run_dir: str) -> pd.DataFrame:
     for ep in range(1, episodes + 1):
         if is_self_play:
             row = _run_episode_self_play(agent, agent_2, env)
+            agent.update_epsilon()
+            agent_2.update_epsilon()
         else:
             row = _run_episode_vs_opponent(agent, opponent, env)
+            agent.update_epsilon()
 
         row["episode"] = ep
         records.append(row)
-
-        agent.update_epsilon(float(getattr(cfg.agent, "epsilon_decay", 1.0)))
 
         if ep % log_interval == 0 or ep == episodes:
             print(
@@ -166,7 +167,7 @@ def train(cfg, run_dir: str) -> pd.DataFrame:
                 f"reward={row['episode_reward']:.1f}  "
                 f"coop={row['coop_rate']:.2f}  "
                 f"opp_coop={row['opp_coop_rate']:.2f}  "
-                f"dR={row['trust_margin']:.2f}"
+                f"dR={row['reward_difference']:.2f}"
             )
 
     # Persist metrics

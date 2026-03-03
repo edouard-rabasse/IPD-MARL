@@ -137,10 +137,10 @@ def compute_forgiveness_rate(
     return float(c_after_dd / total_dd) if total_dd > 0 else 0.0
 
 
-def compute_trust_margin(
+def compute_reward_difference(
     agent_rewards: Sequence[float], opponent_rewards: Sequence[float]
 ) -> float:
-    """Trust margin ΔR = mean(agent_rewards) - mean(opponent_rewards).
+    """Reward difference ΔR = mean(agent_rewards) - mean(opponent_rewards).
 
     Parameters
     ----------
@@ -166,17 +166,17 @@ def summarize_run(metrics_df: pd.DataFrame) -> dict[str, float]:
     ----------
     metrics_df : DataFrame
         Must contain columns ``episode_reward``, ``coop_rate``,
-        ``opp_coop_rate``, ``trust_margin``.
+        ``opp_coop_rate``, and ``reward_difference``.
 
     Returns
     -------
     dict
         Keys: ``mean_reward``, ``mean_coop_rate``, ``mean_opp_coop_rate``,
-        ``mean_trust_margin``.
+        ``mean_reward_difference``.
     """
     return {
         "mean_reward": float(metrics_df["episode_reward"].mean()),
         "mean_coop_rate": float(metrics_df["coop_rate"].mean()),
         "mean_opp_coop_rate": float(metrics_df["opp_coop_rate"].mean()),
-        "mean_trust_margin": float(metrics_df["trust_margin"].mean()),
+        "mean_reward_difference": float(metrics_df["reward_difference"].mean()),
     }

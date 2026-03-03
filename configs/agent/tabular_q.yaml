@@ -1,6 +1,13 @@
 name: tabular_q
-lr: 0.1
+lr: 1.0
 gamma: 1
-epsilon: 0.1
-epsilon_decay: 1.0  # multiplicative factor per episode; 1.0 = no decay
-memory_length: 3
+epsilon: 10.0
+# Exploration schedule for TabularQAgent:
+#   - "glie": harmonic decay epsilon_t = epsilon_0 / (1 + t)
+#   - "fixed": keep epsilon constant at epsilon_0
+epsilon_schedule: glie
+# Learning-rate schedule for TabularQAgent:
+#   - "robbins_monro": alpha_t(s,a) = lr / N_t(s,a)
+#   - "fixed": alpha_t(s,a) = lr
+lr_schedule: robbins_monro
+memory_length: 6

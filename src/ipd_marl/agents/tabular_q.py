@@ -28,10 +28,28 @@ class TabularQAgent(BaseAgent):
         super().__init__(obs_dim=obs_dim, n_actions=2)
         self.lr: float = float(cfg.lr)
         self.gamma: float = float(cfg.gamma)
-        self.epsilon: float = float(cfg.epsilon)
+        # Learning-rate schedule: "robbins_monro" (default) or "fixed".
+        # - "robbins_monro": alpha_t(s,a) = lr / N_t(s,a)
+        # - "fixed": alpha_t(s,a) = lr
+        self.lr_schedule: str = str(getattr(cfg, "lr_schedule", "robbins_monro"))
+        # Exploration schedule: "glie" (default) or "fixed".
+        # - "glie": harmonic decay epsilon_t = epsilon_0 / (1 + t)
+        # - "fixed": keep epsilon constant at cfg.epsilon
+        self.epsilon_schedule: str = str(getattr(cfg, "epsilon_schedule", "glie"))
+        # ε initial value (used for both fixed and GLIE schedules).
+        self.epsilon_init: float = float(cfg.epsilon)
+        self.epsilon: float = self.epsilon_init
+        self._eps_t: int = 0
         # Optimistic initialisation: start at max payoff (5.0) to drive exploration
         self.q_table: dict[tuple, np.ndarray] = defaultdict(
             lambda: np.full(self.n_actions, 5.0, dtype=np.float64)
+        )
+        # Visit-counts for per-(state, action) step sizes.
+        # Used when lr_schedule="robbins_monro":
+        #   alpha_t(s, a) = (lr / N_t(s, a))
+        # which satisfies ∑_t alpha_t = ∞ and ∑_t alpha_t^2 < ∞.
+        self.visit_counts: dict[tuple, np.ndarray] = defaultdict(
+            lambda: np.zeros(self.n_actions, dtype=np.int64)
         )
 
     # ---- helpers ----
@@ -48,15 +66,18 @@ class TabularQAgent(BaseAgent):
         ties = np.where(q_values == max_q)[0]
         return int(np.random.choice(ties))
 
-    def update_epsilon(self, factor: float) -> None:
-        """Decay exploration rate multiplicatively.
+    def update_epsilon(self) -> None:
+        """Update ε according to the chosen schedule."""
+        if self.epsilon_schedule == "fixed":
+            # Keep epsilon constant at its initial value.
+            self.epsilon = self.epsilon_init
+            return
 
-        Parameters
-        ----------
-        factor : float
-            Multiplicative factor applied to ``epsilon`` (e.g. 0.995).
-        """
-        self.epsilon = max(0.0, self.epsilon * factor)
+        # Default: GLIE-style harmonic decay
+        #   epsilon_t = epsilon_0 / (1 + t)
+        # which ensures epsilon_t → 0 while ∑_t epsilon_t diverges.
+        self._eps_t += 1
+        self.epsilon = self.epsilon_init / (1.0 + float(self._eps_t))
 
     def observe(
         self,
@@ -70,7 +91,16 @@ class TabularQAgent(BaseAgent):
         next_key = self._key(next_obs)
         best_next = float(np.max(self.q_table[next_key]))
         target = reward + self.gamma * best_next * (1.0 - float(done))
-        self.q_table[key][action] += self.lr * (target - self.q_table[key][action])
+
+        if self.lr_schedule == "fixed":
+            alpha = self.lr
+        else:
+            # Default: Robbins–Monro per-(state, action) learning rate.
+            self.visit_counts[key][action] += 1
+            n_sa = float(self.visit_counts[key][action])
+            alpha = self.lr / n_sa
+
+        self.q_table[key][action] += alpha * (target - self.q_table[key][action])
 
     # ---- persistence ----
     def save(self, path: str) -> None:
