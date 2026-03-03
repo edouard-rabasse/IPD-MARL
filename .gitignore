@@ -15,6 +15,7 @@ dist/
 # Hydra outputs (auto-generated working dirs)
 outputs/
 multirun/
+experiments/
 
 # pytest / ruff caches
 .pytest_cache/
