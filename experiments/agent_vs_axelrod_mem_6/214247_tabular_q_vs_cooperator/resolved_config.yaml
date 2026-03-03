@@ -1,0 +1,18 @@
+agent:
+  name: tabular_q
+  lr: 1.0
+  gamma: 1
+  epsilon: 10.0
+  memory_length: 6
+env:
+  max_rounds: 7
+  noise: 0.0
+opponent:
+  type: axelrod
+  strategy_name: Cooperator
+train:
+  episodes: 1000
+  log_interval: 50
+eval:
+  eval_episodes: 100
+seed: 42
